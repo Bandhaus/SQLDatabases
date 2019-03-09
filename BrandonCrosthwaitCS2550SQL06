@@ -1,0 +1,166 @@
+-- Lists the student ID of the student that has enrolled in the most sections of 100 level courses (100 - 199).
+SELECT student_id
+FROM enrollment e
+INNER JOIN section s 
+ON e.section_id = s.section_id
+WHERE Course_no BETWEEN 100 AND 199
+GROUP BY student_id
+HAVING COUNT(*) =
+    (
+    SELECT MAX(Number_Sections)
+    FROM
+        (
+            SELECT student_id, COUNT(*) AS Number_Sections
+            FROM enrollment e
+            INNER JOIN section s ON e.section_id = s.section_id
+            WHERE Course_no BETWEEN 100 AND 199
+            GROUP BY student_id
+        )
+    );
+
+-- Provides the student_id and name of the student that scored highest on the final exam (FI) in course 230 section 100. 
+SELECT Student_ID, Last_Name, First_Name
+FROM student s
+INNER JOIN enrollment e 
+ON s.student_id = e.student_id
+INNER JOIN grade g      
+ON e.section_id = g.section_id 
+AND e.student_id = g.student_id
+INNER JOIN section sec  
+ON sec.section_id = e.section_id
+WHERE sec.course_no = 230
+AND sec.section_id = 100
+AND g.grade_type_code = 'FI'
+AND numeric_grade =
+    (
+        SELECT MAX(numeric_grade)
+        FROM
+        (
+        SELECT First_Name, Last_Name, Numeric_Grade
+        FROM student s
+        INNER JOIN enrollment e 
+        ON s.student_id = e.student_id
+        INNER JOIN grade g
+        ON e.section_id = g.section_id AND e.student_id = g.student_id
+        INNER JOIN section sec  
+        ON sec.section_id = e.section_id
+        WHERE sec.course_no = 230
+        AND sec.section_id = 100
+        AND g.grade_type_code = 'FI'
+        )
+    );
+
+-- List of instructors who have never taught a course section.
+SELECT Salutation, First_Name, Last_Name, Zip
+FROM Instructor
+WHERE Instructor_ID NOT IN
+(
+    SELECT s.Instructor_ID
+    FROM Section s INNER JOIN Instructor i
+    ON s.instructor_id = i.instructor_id
+);
+
+-- List containing the last names and final exam grade (FI) of students who scored above average on the final exam for section 90.
+SELECT Last_Name, Numeric_Grade
+FROM Student s INNER JOIN Enrollment e
+ON s.student_id = e.student_id
+INNER JOIN Grade g
+ON e.student_id = g.student_id AND e.section_id = g.section_id
+WHERE numeric_grade > 
+(
+    SELECT AVG(numeric_Grade) AS avg_grade
+    FROM section s INNER JOIN enrollment e
+    ON s.section_id = e.section_id
+    INNER JOIN grade g
+    ON e.section_id = g.section_id AND e.student_id = g.student_id
+    WHERE s.section_id = '90'
+AND grade_type_code = 'FI'
+)
+    AND e.section_id = '90'
+    AND g.grade_type_code = 'FI'
+ORDER BY last_name;
+
+-- Lists the course number and course description of the courses with the lowest number of enrolled students.
+SELECT course_no, description
+FROM (
+    SELECT s.course_no, c.description
+    FROM enrollment e INNER JOIN section s
+    ON e.section_id = s.section_id
+    INNER JOIN course c
+    ON s.course_no = c.course_no
+    GROUP BY s.course_no, c.description
+    HAVING 'Enrolled' = MIN('Enrolled')
+    ORDER BY COUNT(*)
+)
+WHERE ROWNUM <= 3
+ORDER BY course_no;
+
+-- Lists course number and course description for all courses that have at least one 10:30AM section.
+SELECT c.course_no, c.description
+FROM course c INNER JOIN section s
+ON c.course_no = s.course_no
+WHERE To_Char(s.start_date_time, 'HH:MI') = '10:30'
+ORDER BY c.course_no;
+
+-- Lists the student_id and last_name of students who received a below average grade on the third quiz in section 120. 
+SELECT student_id, last_name
+FROM (
+    SELECT s.student_id, s.last_name, g.numeric_grade
+    FROM student s INNER JOIN enrollment e
+    ON s.student_id = e.student_id
+    INNER JOIN grade g
+    ON e.student_id = g.student_id
+    AND e.section_id = g.section_id
+    WHERE g.grade_code_occurrence = '3'
+    AND g.grade_type_code = 'QZ'
+    AND g.section_id = 120
+    ORDER BY g.numeric_grade ASC)
+WHERE ROWNUM = 1;
+
+-- List containing the full names and phone numbers of students who have taken both the Systems Analysis and the Project Management courses. 
+SELECT first_name, last_name, phone
+FROM(
+SELECT e.student_id, stu.first_name, stu.last_name, stu.phone, COUNT(*) as cnum
+FROM enrollment e INNER JOIN section s ON e.section_id = s.section_id 
+INNER JOIN course c ON s.course_no = c.course_no 
+INNER JOIN student stu ON stu.student_ID = e.student_id
+WHERE c.description LIKE 'Systems%' OR c.description LIKE 'Project%'
+GROUP BY e.student_id, stu.first_name, stu.last_name, stu.phone)
+WHERE cnum = 2;
+
+-- Lists the instructor name and course description of the Java courses that have been taught by the Instructor that has taught the most Java courses.
+SELECT i.first_name, i.last_name, c.course_no, c.description
+FROM instructor i INNER JOIN section s
+ON i.instructor_id = s.instructor_id
+INNER JOIN course c
+ON s.course_no = c.course_no
+INNER JOIN (
+    SELECT i.first_name
+    FROM section s JOIN instructor i
+    ON s.instructor_id = i.instructor_id
+    INNER JOIN course c
+    ON c.course_no = s.course_no
+    WHERE c.description LIKE '%Java%'
+    AND ROWNUM = 1
+    GROUP BY i.first_name
+    ORDER BY COUNT(*) DESC) d
+ON i.first_name = d.first_name
+WHERE i.first_name = d.first_name
+AND c.description LIKE '%Java%'
+ORDER BY c.description;
+
+-- Lists the student_id and last_name of students who received an above average grade on the Final Exam in section 130.
+SELECT s.student_id, s.last_name
+FROM grade g INNER JOIN enrollment e
+ON g.student_id = e.student_id
+AND g.section_id = e.section_id
+INNER JOIN student s
+ON e.student_id = s.student_id
+WHERE g.numeric_grade > (
+    SELECT AVG(numeric_grade)
+    FROM grade
+    WHERE section_id = 130
+    AND grade_type_code = 'FI')
+AND g.section_id = 130
+AND g.grade_type_code = 'FI'
+ORDER BY s.last_name;

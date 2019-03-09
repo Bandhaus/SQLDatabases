@@ -1,0 +1,68 @@
+-- List of the full name and phone number of all students that work for 'New York Culture'
+SELECT first_name ||' '|| last_name AS "Student Name", phone
+FROM STUDENT
+WHERE employer =  'New York Culture'
+ORDER BY last_name;
+
+-- Distinct list of student employers that are corporations (have "Co." in their name). 
+SELECT DISTINCT employer
+FROM student
+WHERE employer LIKE '%Co.'
+ORDER BY employer;
+
+-- List of students in area code 617. Student name in the format <last name (all upper case)>, <first initial>. followed by the phone number.
+SELECT  UPPER(last_name) ||', '|| SUBSTR(first_name, 1, 1) ||'.' AS "Student Name", phone
+FROM STUDENT
+WHERE phone LIKE '617%'
+ORDER BY last_name;
+
+-- Lists the name and address of all instructors without a zip code.
+SELECT first_name ||' '|| last_name as Instructor, street_address
+FROM instructor
+WHERE zip IS NULL;
+
+-- List of zip codes for Jackson Heights, NY.
+SELECT zip
+FROM zipcode
+WHERE city = 'Jackson Heights' AND state = 'NY';
+
+-- Lists the course number and location for all courses taught in a classroom that ends in the number 10.
+SELECT course_no, location
+FROM section
+WHERE location LIKE '%10'
+ORDER BY location;
+
+-- list containing full state name, state abbreviation and city from the zip code table for MA, OH, PR and WV
+SELECT 
+CASE
+  WHEN state = 'MA' THEN 'Massachusetts'
+  WHEN state = 'OH' THEN 'Ohio'
+  WHEN state = 'PR' THEN 'Puerto Rico'
+  WHEN state = 'WV' THEN 'West Virginia'
+END AS "State Name"
+,state, city
+FROM zipcode
+WHERE state IN ('MA', 'OH', 'PR', 'WV')
+ORDER BY state;
+
+-- list containing single column address (salutation, first name, last name, address, zip) as 'Instructor Address' for each instructor in zip code 10015.
+SELECT salutation ||'. '|| first_name ||' '|| last_name ||' '|| street_address ||' '|| zip AS "Instructor Address"
+FROM instructor
+WHERE zip = '10015'
+ORDER BY last_name;
+
+-- Lists the student id and quiz score for each student in section 152.
+SELECT student_id, numeric_grade
+FROM grade
+WHERE section_id = '152' AND grade_type_code = 'QZ'
+ORDER BY numeric_grade DESC;
+
+-- Lists the student ID, final exam (FI) score and exam result ('PASS' or 'FAIL') for all students in section 156.
+SELECT student_id, numeric_grade,
+CASE
+  WHEN numeric_grade >= '85' then 'Pass'
+  ELSE 'fail'
+END AS "RESULT"
+FROM grade
+Where section_id = '156' AND grade_type_code = 'FI'
+ORDER BY student_id;

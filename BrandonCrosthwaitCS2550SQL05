@@ -1,0 +1,97 @@
+-- Lists the full name and phone number for students that live in Newark, NJ.
+SELECT First_Name, Last_Name, phone
+FROM Student s JOIN Zipcode zip
+ON s.zip = zip.zip
+WHERE zip.city = 'Newark'
+AND zip.state = 'NJ'
+ORDER BY Last_Name, First_Name;
+
+-- Lists the course number, prerequisite course number and prerequisite course description for all 300 level courses.
+SELECT c.Course_NO, prereq.Course_NO AS "Prereqisite Course Number", prereq.Description AS "Prereqisite Course Description"
+FROM Course c JOIN Course prereq
+ON prereq.course_no = c.prerequisite
+WHERE c.course_no >= 300
+AND c.course_no < 400
+ORDER BY course_no;
+
+-- Lists the course number and description for all 100-level courses taught by Charles Lowry. 
+SELECT s.Course_NO, c.Description
+FROM Course c JOIN Section s 
+ON c.course_no = s.course_no
+JOIN Instructor i
+ON s.Instructor_ID = i.Instructor_ID
+WHERE i.first_name = 'Charles'
+    AND i.last_name = 'Lowry'
+    AND c.course_no >= 100
+    AND c.course_no < 200
+ORDER BY c.course_no;
+
+-- Lists the grade type code, description and number per section of all grade types in course 144. 
+SELECT gtw.grade_type_code, 
+    CASE gtw.grade_type_code
+    WHEN 'FI' THEN 'Final'
+    WHEN 'HM' THEN 'Homework'
+    WHEN 'MT' THEN 'Midterm'
+    WHEN 'PA' THEN 'Participation'
+    WHEN 'QZ' THEN 'Quiz'
+    END Description, number_per_section
+FROM Section s JOIN Grade_Type_Weight gtw
+ON s.section_id = gtw.section_id
+WHERE course_no = 144
+ORDER BY grade_type_code;
+
+-- List of students who have an overall grade average of 93 or higher. 
+SELECT Last_Name||', '||First_Name AS "Student Name"
+FROM Student s JOIN Enrollment e
+ON s.student_id = e.student_id
+JOIN Grade g
+ON e.student_id = g.student_id
+GROUP BY Last_Name, First_Name
+HAVING AVG(numeric_grade) >= 93
+ORDER BY Last_Name;
+
+-- Lists the names and address for all faculty who have taught less than 10 course sections.
+SELECT i.First_Name, i.Last_Name, i.Street_address, zip.city, zip.state, zip.zip
+FROM Instructor i JOIN Zipcode zip
+ON i.zip = zip.zip
+JOIN Section s
+ON i.instructor_id = s.instructor_id
+GROUP BY i.First_Name, i.Last_Name, i.Street_address, zip.city, zip.state, zip.zip
+HAVING count(*) < 10;
+
+-- Lists the course number and number of students enrolled in courses that don’t have a prerequisite.
+SELECT c.course_no, count(*) AS Enrolled
+FROM Course c JOIN Section s
+ON c.course_no = s.course_no
+JOIN Enrollment e
+ON s.section_id = e.section_id
+WHERE c.prerequisite IS NULL
+GROUP BY c.course_no
+ORDER BY Enrolled DESC;
+
+-- List of students from Flushing, NY who enrolled prior to 10:20am on February 2, 2007.
+SELECT DISTINCT s.First_Name, s.Last_Name, s.Phone
+FROM Student s JOIN Zipcode zip
+ON s.zip = zip.zip
+JOIN Enrollment e
+ON s.student_id = e.student_id
+WHERE zip.city = 'Flushing'
+    AND zip.state = 'NY'
+    AND e.enroll_date < TO_DATE('02-02-2007 10:20 AM', 'MM-DD-YYYY HH:MI AM')
+ORDER BY last_name;
+
+-- List of courses that include projects as a part of their grading criteria.
+SELECT Course_no
+FROM Section s JOIN Grade_Type_Weight gtw
+ON s.section_id = gtw.section_id
+WHERE gtw.grade_type_code = 'PJ'
+ORDER BY course_no;
+
+-- Lists the highest grade on the final exam that was given to a student in course 145.
+SELECT MAX(Numeric_Grade) AS HIGHEST_FINAL_GRADE
+FROM Section s JOIN Enrollment e
+ON s.section_id = e.section_id
+JOIN Grade g
+ON e.student_id = g.student_id AND e.section_id = g.section_id
+WHERE s.course_no = 145
+    AND g.grade_type_code = 'FI';

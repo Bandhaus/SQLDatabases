@@ -1,0 +1,56 @@
+-- Lists the first name, last name and phone number for all students that registered on 2/13/2007. 
+SELECT first_name, last_name, phone
+FROM student
+WHERE registration_date = '13-FEB-2007'
+ORDER BY last_name, first_name;
+
+-- Lists course number, section ID and start date for all sections located in L509. 
+SELECT course_no, section_id, start_date_time
+FROM section
+WHERE location = 'L509'
+ORDER BY start_date_time;
+
+-- Lists the course number, section ID, start date, instructor ID and capacity for all courses with a start date in July 2007.
+SELECT course_no, section_id, start_date_time, instructor_id, capacity
+FROM section
+WHERE To_Char(start_date_time, 'Mon YYYY') = 'Jul 2007'
+ORDER BY start_date_time, course_no;
+
+-- Lists Student ID, Section ID and final grade for all students who have a final grade and enrolled in January 2007.
+SELECT student_id, section_id, final_grade
+FROM enrollment
+WHERE To_Char(enroll_date, 'Mon YYYY') = 'Jan 2007'
+AND final_grade != 0;
+
+-- Query using the Oracle Dual Table that returns the date of the end of the semester for courses that begin on January 11, 2016. 
+SELECT To_Date('Jan 11, 2016', 'Mon DD, YYYY')+109 AS SEMESTER_END_DATE
+FROM DUAL;
+
+-- List of course numbers and locations for sections being taught in the even numbered rooms located in building L.
+SELECT course_no, location
+FROM section
+WHERE location LIKE 'L%'
+AND MOD(SUBSTR(location,-1,1), 2) = 0;
+
+-- List of Students in zip code 11368 that registered 3 or more days after their student record was created.
+SELECT last_name, first_name
+FROM student
+WHERE zip = '11368'
+AND registration_date >= created_date+3;
+
+-- List of student names along with the number of years since they registered for those students from area code 212.
+SELECT first_name, last_name, ROUND((SYSDATE - registration_date)/365, 2) AS Years
+FROM student
+WHERE phone LIKE '212%'
+ORDER BY (SYSDATE - created_date) DESC;
+
+-- Distinct list of starting times for all course sections.
+SELECT DISTINCT TO_CHAR(start_Date_Time, 'HH:MI') AS "START"
+FROM section
+ORDER BY "START";
+
+-- Lists the Student ID, Section ID and time enrolled for all students who enrolled at 10:19am. 
+SELECT student_Id, section_Id, TO_CHAR(enroll_Date, 'HH:MIAM') AS "ENROLL_TIME"
+FROM Enrollment
+WHERE TO_CHAR(enroll_Date, 'HH:MI') = '10:19'
+ORDER BY student_Id;

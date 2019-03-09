@@ -1,0 +1,63 @@
+-- Lists all instructors in order of last name
+SELECT salutation, last_name, first_name
+FROM instructor
+ORDER BY last_name, first_name;
+
+-- List of room numbers
+SELECT DISTINCT location
+FROM section
+ORDER BY location;
+
+-- List of first and last names of Instructors with a first name starting with “T”.
+SELECT first_name, last_name
+FROM instructor
+WHERE first_name LIKE 'T%'
+ORDER BY first_name;
+
+-- Lists phone number, full name and employer for all students with a last name of “Torres”.
+SELECT phone, first_name||''||last_name AS Fullname, employer
+FROM student
+WHERE last_name = 'Torres'
+ORDER BY employer;
+
+-- Lists the course number and course description of all courses that have a prerequisite of course 350.
+SELECT course_no, description
+FROM course
+WHERE prerequisite = '350'
+ORDER BY course_no;
+
+-- Lists the course number, description and cost for all 200 level courses (200-299) costing less than $1100. 
+SELECT course_no, description, cost
+FROM course
+WHERE course_no between 200 and 299
+AND cost < 1100
+ORDER BY course_no;
+
+-- Lists the course number, section id and location for all 100 level courses  (100 through 199) that are taught in room L214 or L509.
+SELECT course_no, section_id, location
+FROM section
+WHERE course_no between 100 and 199
+And (location = 'L214'
+Or location = 'L509')
+ORDER BY location, course_no;
+
+-- Lists the course number, section id and capacity for classes with a capacity of 12 or 15 (use the IN clause).
+SELECT course_no, section_id, capacity
+FROM section
+WHERE capacity = '12' 
+OR capacity = '15'
+ORDER BY course_no, section_id;
+
+-- Lists the student id and grade for all of the midterm exam scores (MT) in section 141.
+SELECT student_id, numeric_grade
+FROM Grade
+WHERE section_id = '141'
+AND grade_type_code = 'MT'
+ORDER BY student_id, numeric_grade;
+
+-- Lists the course number and description for all 300 level courses that have a prerequisite.
+SELECT course_no, description
+FROM course
+WHERE course_no between 300 and 399
+AND prerequisite != '0'
+ORDER BY description;
